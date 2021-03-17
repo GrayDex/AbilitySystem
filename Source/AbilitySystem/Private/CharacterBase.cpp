@@ -24,7 +24,17 @@ void ACharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	// Initializing Character attributes in UI
+	OnHealthChanged(AttributeSetBaseComp->Health.GetCurrentValue(), AttributeSetBaseComp->MaxHealth.GetCurrentValue());
+	OnManaChanged(AttributeSetBaseComp->Mana.GetCurrentValue(), AttributeSetBaseComp->MaxMana.GetCurrentValue());
+	OnStrenghtChanged(AttributeSetBaseComp->Strenght.GetCurrentValue(), AttributeSetBaseComp->MaxStrenght.GetCurrentValue());
+
+	// Subscribe 
 	AttributeSetBaseComp->OnHealthChange.AddDynamic(this, &ACharacterBase::OnHealthChanged);
+	AttributeSetBaseComp->OnManaChange.AddDynamic(this, &ACharacterBase::OnManaChanged);
+	AttributeSetBaseComp->OnStrenghtChange.AddDynamic(this, &ACharacterBase::OnStrenghtChanged);
+
+	AddGameplayTag(FullHealthTag);
 }
 
 // Called every frame
@@ -35,11 +45,7 @@ void ACharacterBase::Tick(float DeltaTime)
 }
 
 // Called to bind functionality to input
-void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
+void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) { Super::SetupPlayerInputComponent(PlayerInputComponent); }
 
 void ACharacterBase::AcquireAbility(TSubclassOf<UGameplayAbility> AbilityToAcquire)
 {
@@ -65,7 +71,26 @@ void ACharacterBase::OnHealthChanged(float Health, float MaxHealth)
 		Dead();
 		BP_Die(); 
 	}
+	if (Health == MaxHealth)
+	{
+		AddGameplayTag(FullHealthTag);
+	}
+	else
+	{
+		RemoveGameplayTag(FullHealthTag);
+	}
+
 	BP_OnHealthChanged(Health, MaxHealth);
+}
+
+void ACharacterBase::OnManaChanged(float Mana, float MaxMana)
+{
+	BP_OnManaChanged(Mana, MaxMana);
+}
+
+void ACharacterBase::OnStrenghtChanged(float Strenght, float MaxStrenght)
+{
+	BP_OnStrenghtChanged(Strenght, MaxStrenght);
 }
 
 bool ACharacterBase::IsOtherHostile(ACharacterBase* Other)
@@ -78,6 +103,17 @@ void ACharacterBase::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 	if (NewController->IsPlayerController()) { TeamID = 0; }
+}
+
+void ACharacterBase::AddGameplayTag(FGameplayTag& TagToAdd)
+{
+	GetAbilitySystemComponent()->AddLooseGameplayTag(TagToAdd);
+	GetAbilitySystemComponent()->SetTagMapCount(TagToAdd, 1); // only one instance this tag will be created
+}
+
+void ACharacterBase::RemoveGameplayTag(FGameplayTag& TagToRemove)
+{
+	GetAbilitySystemComponent()->RemoveLooseGameplayTag(TagToRemove);
 }
 
 void ACharacterBase::Dead()
