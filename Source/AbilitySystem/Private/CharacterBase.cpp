@@ -6,6 +6,9 @@
 #include "AIController.h"
 #include "BrainComponent.h"
 #include "GameFramework/PlayerController.h"
+#include "PlayerControllerBase.h"
+#include "AbilityTypes.h"
+#include "GameplayAbilityBase.h"
 
 // Sets default values
 ACharacterBase::ACharacterBase()
@@ -60,6 +63,39 @@ void ACharacterBase::AcquireAbility(TSubclassOf<UGameplayAbility> AbilityToAcqui
 			AbilitySystemComp->GiveAbility(AbilitySpec);
 		}
 		AbilitySystemComp->InitAbilityActorInfo(this, this);
+	}
+}
+
+void ACharacterBase::AcquareAbilities(TArray<TSubclassOf<UGameplayAbility>> AbilityToAquire)
+{
+	if (AbilityToAquire.Num() < 1) { UE_LOG(LogTemp, Error, TEXT("[Grayz] In %s AbilityToAquire is empty"), *FString(__FUNCTION__)); return; }
+	for (TSubclassOf<UGameplayAbility> AbilityItem : AbilityToAquire)
+	{
+		AcquireAbility(AbilityItem);
+		if (AbilityItem->IsChildOf(UGameplayAbilityBase::StaticClass())) // if class ability is UGameplayAbilityBase
+		{
+			TSubclassOf<UGameplayAbilityBase> AbilityBaseClass = *AbilityItem;
+			if (AbilityBaseClass != nullptr)
+			{
+				AddAbilityToUI(AbilityBaseClass);
+			}
+		}
+	}
+}
+
+void ACharacterBase::AddAbilityToUI(TSubclassOf<UGameplayAbilityBase> AbilityToAdd)
+{
+	APlayerControllerBase* PlayerControllerBase = Cast<APlayerControllerBase>(GetController());
+	if (PlayerControllerBase)
+	{
+		UGameplayAbilityBase* AbilityInstance = AbilityToAdd.Get()->GetDefaultObject<UGameplayAbilityBase>();
+		if (AbilityInstance)
+		{
+			FGameplayAbilityInfo AbilityInfo = AbilityInstance->GetAbilityInfo();
+			UE_LOG(LogTemp, Warning, TEXT("[Grayz] In %s Cost: %f"), *FString(__FUNCTION__), AbilityInfo.Cost);
+			UE_LOG(LogTemp, Warning, TEXT("[Grayz] In %s CooldownDuration: %f"), *FString(__FUNCTION__), AbilityInfo.CooldownDuration);
+			PlayerControllerBase->AddAbilityToUI(AbilityInfo);
+		}
 	}
 }
 
@@ -118,9 +154,42 @@ void ACharacterBase::RemoveGameplayTag(FGameplayTag& TagToRemove)
 
 void ACharacterBase::Dead()
 {
-	APlayerController* PC = Cast<APlayerController>(GetController());
-	if (PC) { PC->DisableInput(PC); }
+	DisableInputControl();
+}
 
-	AAIController* AIC = Cast<AAIController>(GetController());
-	if (AIC) { AIC->GetBrainComponent()->StopLogic("Dead"); }
+void ACharacterBase::DisableInputControl()
+{
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC) 
+	{
+		PC->DisableInput(PC); 
+	}
+	else
+	{
+		AAIController* AIC = Cast<AAIController>(GetController());
+		if (AIC) { AIC->GetBrainComponent()->StopLogic("Dead"); }
+	}
+}
+
+void ACharacterBase::EnableInputControl()
+{
+	if (!bIsDead)
+	{
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if (PC)
+		{
+			PC->EnableInput(PC);
+		}
+		else
+		{
+			AAIController* AIC = Cast<AAIController>(GetController());
+			if (AIC) { AIC->GetBrainComponent()->RestartLogic(); }
+		}
+	}
+}
+
+void ACharacterBase::HitStun(float StunDuration)
+{
+	DisableInputControl();
+	GetWorldTimerManager().SetTimer(StunTimeHandle, this, &ACharacterBase::EnableInputControl, StunDuration, false);
 }

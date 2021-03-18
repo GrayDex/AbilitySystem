@@ -11,6 +11,7 @@
 #include "CharacterBase.generated.h"
 
 class UAttributeSetBase;
+class UGameplayAbilityBase;
 
 UCLASS()
 class ABILITYSYSTEM_API ACharacterBase : public ACharacter, public IAbilitySystemInterface
@@ -40,33 +41,47 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grayz")
 	UAttributeSetBase* AttributeSetBaseComp;
 
+	// This will be blocked ability for use
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grayz")
+	FGameplayTag FullHealthTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grayz")
+	bool bIsDead;
+
+// FUNCTIONS
 	/** Returns the ability system component to use for this actor. It may live on another actor, such as a Pawn using the PlayerState's component */
 	FORCEINLINE virtual UAbilitySystemComponent* GetAbilitySystemComponent() const { return AbilitySystemComp; };
-	
+
+	// Param to detect enemy or ally
+	FORCEINLINE uint8 GetTeamID() const { return TeamID; };
+
 	// Create ability to character
 	UFUNCTION(BlueprintCallable, Category = "Grayz")
 	void AcquireAbility(TSubclassOf<UGameplayAbility> AbilityToAquire);
 
+	UFUNCTION(BlueprintCallable, Category = "Grayz")
+	void AcquareAbilities(TArray<TSubclassOf<UGameplayAbility>> AbilityToAquire);
+
 	// Binded to broadcast OnHealthChanged
 	UFUNCTION()
-		void OnHealthChanged(float Health, float MaxHealth);
+	void OnHealthChanged(float Health, float MaxHealth);
 	// Called in void OnHealthChanged() when OnHealthChange broadcasted
 	UFUNCTION(BlueprintImplementableEvent, Category = "Grayz", meta = (DisplayName = "OnHealthChanged"))
-		void BP_OnHealthChanged(float Health, float MaxHealth);
+	void BP_OnHealthChanged(float Health, float MaxHealth);
 
 	// Binded to broadcast OnManaChanged
 	UFUNCTION()
-		void OnManaChanged(float Mana, float MaxMana);
+	void OnManaChanged(float Mana, float MaxMana);
 	// Called in void OnManaChanged() when OnManaChange broadcasted
 	UFUNCTION(BlueprintImplementableEvent, Category = "Grayz", meta = (DisplayName = "OnManaChanged"))
-		void BP_OnManaChanged(float Mana, float MaxMana);
+	void BP_OnManaChanged(float Mana, float MaxMana);
 
 	// Binded to broadcast OnStrenghtChanged
 	UFUNCTION()
-		void OnStrenghtChanged(float Strenght, float MaxStrenght);
+	void OnStrenghtChanged(float Strenght, float MaxStrenght);
 	// Called in void OnStrenghtChanged() when OnStrenghtChange broadcasted
 	UFUNCTION(BlueprintImplementableEvent, Category = "Grayz", meta = (DisplayName = "OnStrenghtChanged"))
-		void BP_OnStrenghtChanged(float Strenght, float MaxStrenght);
+	void BP_OnStrenghtChanged(float Strenght, float MaxStrenght);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Grayz", meta = (DisplayName = "Die"))
 	void BP_Die();
@@ -75,26 +90,28 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Grayz")
 	bool IsOtherHostile(ACharacterBase* Other);
 
-	// Param to detect enemy or ally
-	FORCEINLINE uint8 GetTeamID() const { return TeamID; };
-
-	void PossessedBy(AController* NewController) override;
-
 	UFUNCTION(BlueprintCallable, Category = "Grayz")
 		void AddGameplayTag(FGameplayTag& TagToAdd);
 
 	UFUNCTION(BlueprintCallable, Category = "Grayz")
 		void RemoveGameplayTag(FGameplayTag& TagToRemove);
 
-	// This will be blocked ability for use
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grayz")
-		FGameplayTag FullHealthTag;
+	UFUNCTION(BlueprintCallable, Category = "Grayz")
+		void HitStun(float StunDuration);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grayz")
-		bool bIsDead;
+	void PossessedBy(AController* NewController) override;
 
 
 protected:
 	uint8 TeamID;
+	FTimerHandle StunTimeHandle;
+
 	void Dead();
+	void AddAbilityToUI(TSubclassOf<UGameplayAbilityBase> AbilityToAdd);
+
+	UFUNCTION(BlueprintCallable, Category = "Grayz")
+		void DisableInputControl();
+	UFUNCTION(BlueprintCallable, Category = "Grayz")
+		void EnableInputControl();
+
 };
