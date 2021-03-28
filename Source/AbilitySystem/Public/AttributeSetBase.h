@@ -22,20 +22,27 @@ class ABILITYSYSTEM_API UAttributeSetBase : public UAttributeSet
 	UAttributeSetBase();
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grayz")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AttributeSetBase")
 		FGameplayAttributeData Health;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grayz")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AttributeSetBase")
 		FGameplayAttributeData MaxHealth;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grayz")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AttributeSetBase")
 		FGameplayAttributeData Mana;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grayz")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AttributeSetBase")
 		FGameplayAttributeData MaxMana;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grayz")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AttributeSetBase")
 		FGameplayAttributeData Strenght;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grayz")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AttributeSetBase")
 		FGameplayAttributeData MaxStrenght;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AttributeSetBase")
+		FGameplayAttributeData Attack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AttributeSetBase")
+		FGameplayAttributeData Armor;
+
 
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 

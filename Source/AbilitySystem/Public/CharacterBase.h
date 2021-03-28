@@ -101,6 +101,9 @@ public:
 
 	void PossessedBy(AController* NewController) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Grayz")
+	void Apply_GESH_To_TDH(const FGameplayEffectSpecHandle& GameplayEffect, const FGameplayAbilityTargetDataHandle& TargetData);
+
 
 protected:
 	uint8 TeamID;

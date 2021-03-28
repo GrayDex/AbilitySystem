@@ -11,7 +11,9 @@ UAttributeSetBase::UAttributeSetBase()
 	Mana(100.f),
 	MaxMana(150.f),
 	Strenght(200.f),
-	MaxStrenght(250.f)
+	MaxStrenght(250.f),
+	Attack(20.f),
+	Armor(5.f)
 {
 
 }

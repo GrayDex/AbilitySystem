@@ -50,6 +50,16 @@ void ACharacterBase::Tick(float DeltaTime)
 // Called to bind functionality to input
 void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) { Super::SetupPlayerInputComponent(PlayerInputComponent); }
 
+
+void ACharacterBase::Apply_GESH_To_TDH(const FGameplayEffectSpecHandle& GameplayEffect, const FGameplayAbilityTargetDataHandle& TargetData)
+{
+	for (TSharedPtr<FGameplayAbilityTargetData>Data : TargetData.Data)
+	{
+		Data->ApplyGameplayEffectSpec(*GameplayEffect.Data.Get());
+	}
+}
+
+
 void ACharacterBase::AcquireAbility(TSubclassOf<UGameplayAbility> AbilityToAcquire)
 {
 	if (!AbilityToAcquire) { UE_LOG(LogTemp, Error, TEXT("[Grayz] In %s AbilityToAquire is nullptr"), *FString(__FUNCTION__)); return; }
